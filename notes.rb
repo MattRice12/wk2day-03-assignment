@@ -58,34 +58,24 @@
   require 'csv'
 
   class Todo
-    attr_accessor :todo, :ask_task, :ask_complete
+    attr_accessor :ask_task, :ask_complete
     def initialize
       @task_response = ask_task
       @compl_response = ask_complete
-      @todo = todo_list
     end
 
     def run
-      todo_list
-      ask_task
-      ask_complete
       add_task
       read_todo_list
     end
 
-
-
     def todo_list
-      todo = [
-        { task: "a", complete?: "C" },
-        { task: "b", complete?: "I" },
-      ]
+
     end
 
     def ask_task
       print "What task would you like to add to your list? > "
-      task_response = gets.chomp
-      puts
+      gets.chomp
     end
 
     def ask_complete
@@ -94,10 +84,10 @@
       response = gets.chomp
         case response
         when /(c|C|complete|Complete)/
-          compl_response = "Complete"
+          return "Complete"
           break
         when /(i|I|incomplete|Incomplete)/
-          compl_response = "Incomplete"
+          return "Incomplete"
           break
         else
           puts "Sorry, I didn't get that...\n\n"
@@ -106,21 +96,25 @@
     end
 
     def add_task
-      @todo << { :task => "#{@task_response}", :complete? => "#{@compl_response}"}
+      todo = [
+        { task: "a", complete?: "C" },
+        { task: "b", complete?: "I" },
+      ]
+
+      todo << { :task => "#{@task_response}", :complete? => "#{@compl_response}"}
 
       CSV.open("todo.csv", "w") do |csv|
         csv << ["Task", "Complete/Incomplete"]
-        @todo.each do |todo|
-          csv << [@todo[:task], @todo[:complete?]]
+        todo.each do |todo|
+          csv << [todo[:task], todo[:complete?]]
         end
       end
     end
 
     def read_todo_list
-
       puts
 
-      @todo = CSV.read("todo.csv") #not working at all
+      todo = CSV.read("todo.csv") #not working at all
 
       puts
 
@@ -136,4 +130,4 @@
     end
   end
 
-  Todo.new
+  Todo.new.run
