@@ -25,18 +25,9 @@ class Todo
   end
 
   def todo_list
-    #
-    # if File.exists?('todo.csv')
-    #   @todo = CSV.read('todo.csv', headers: true, header_converters: :symbol)
-    # end
-
-    CSV.open("todo.csv", "w") do |csv|
-      csv << ["Task", "Complete"]
-      @todo.each do |todo|
-        csv << [todo[:task], todo[:complete]]
-      end
+    if File.exists?('todo.csv')
+      @todo = CSV.read('todo.csv', headers: true, header_converters: :symbol)
     end
-
     if @todo.empty? then puts Messages::EMPTY
     else
       @todo
@@ -47,9 +38,9 @@ class Todo
     loop do
       print Messages::TASK_OPTIONS
       response = gets.chomp
-      case response
-      when /([aA]|[aA]dd)/ then return add_task
-      when /([dD]|[dD]el|[dD]elete)/
+      case response.downcase
+      when /(a|add)/ then return add_task
+      when /(d|delete)/
         if @todo.empty? #problem <---- If the todo list is empty, cannot choose delete.
           system("clear")
           puts Messages::WELCOME
@@ -57,7 +48,7 @@ class Todo
         else
           return del_task
         end
-      when /(m|M|modify|Modify)/
+      when /(m|modify)/
         if @todo.empty?
           system("clear")
           todo_list
@@ -65,7 +56,7 @@ class Todo
         else
           return mod_task
         end
-      when /(q|Q|quit|Quit)/
+      when /(q|quit)/
         send_to_csv ####-----------------< This one. Trying to save list b/w sessions
         exit
       else
@@ -83,9 +74,12 @@ class Todo
     loop do
     print Messages::ASK_COMPLETE
     response = gets.chomp
-      case response
-      when /(c|C|complete|Complete)/ then return "Complete"
-      when /(i|I|incomplete|Incomplete)/ then return "Incomplete"
+      case response.downcase
+      when "c" then return "Complete"
+      when "complete" then return "Complete"
+      when "i" then return "Incomplete"
+      when "incomplete" then return "Incomplete"  
+
       else
         puts Messages::REINPUT
       end
@@ -106,21 +100,21 @@ class Todo
     end
   end
 
-  def mod_task
+  def mod_task # need to mod these... ".replace" is defined for hashes, not for CSVs... need to find the method for CSVs
     print Messages::SELECT_MOD
     response = gets.chomp.to_i - 1
     if todo_list[response][:complete] == "Incomplete"
-      todo_list[response].replace({:task => todo_list[response].fetch(:task), :complete => "Complete"})
+      todo_list[response][:complete] = "Complete"
     else
-      todo_list[response].replace({:task => todo_list[response].fetch(:task), :complete => "Incomplete"})
+      todo_list[response][:complete] = "Incomplete"
     end
     send_to_csv
   end
 
-  def del_task #prompts users to delete a task; deletes that task
+  def del_task # need to mod these... ".delete_at" is defined for hashes, not for CSVs... need to find the method for CSVs
     print Messages::SELECT_DEL
     response = gets.chomp.to_i - 1
-    todo_list.delete_at(response)
+    todo_list.delete(response)
     send_to_csv
   end
 
@@ -133,5 +127,7 @@ class Todo
     end
   end
 end
+
+
 
 # require 'pry'; binding.pry
